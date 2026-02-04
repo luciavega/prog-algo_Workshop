@@ -150,19 +150,66 @@ void animate_disc()
 {
     int w = 500;
     int h = 500;
-    int frames = 10;        
-    int max_offset = 100;     
+    int frames = 10;
+    int max_offset = 100;
 
     for (int i = 0; i < frames; ++i)
     {
         sil::Image frame{w, h};
-        int offset = (i * max_offset) / (frames - 1); 
+        int offset = (i * max_offset) / (frames - 1);
         disc(frame, offset);
         char filename[64];
         sprintf(filename, "output/disc_frame_%02d.png", i);
         frame.save(filename);
     }
 }
+
+void rosace()
+{
+    int w = 500;
+    int h = 500;
+    sil::Image image{w, h};
+
+    float thickness = 2.f;
+    float rayon = w / 4.f;
+    float pi = 3.14159265f;
+    int num_outer = 6;  
+
+    for (glm::vec3& c : image.pixels()) c = glm::vec3(0.f);
+
+    for (int x = 0; x < w; x++)
+    {
+        for (int y = 0; y < h; y++)
+        {
+            float xc = x - w / 2.f;
+            float yc = y - h / 2.f;
+
+            bool draw = false;
+
+            float dist_center = std::sqrt(xc * xc + yc * yc);
+            if (std::abs(dist_center - rayon) < thickness) draw = true;
+
+            for (int i = 0; i < num_outer; i++)
+            {
+                float angle = i * 2.f * pi / num_outer;
+                float x_offset = rayon * std::cos(angle);
+                float y_offset = rayon * std::sin(angle);
+
+                float dx = xc - x_offset;
+                float dy = yc - y_offset;
+                float dist = std::sqrt(dx * dx + dy * dy);
+
+                if (std::abs(dist - rayon) < thickness) draw = true;
+            }
+
+            if (draw)
+                image.pixel(x, y) = glm::vec3(1.f); 
+        }
+    }
+
+    image.save("output/rosace.png");
+}
+
 
 int main()
 {
@@ -186,8 +233,9 @@ int main()
     //disc(disc_image);
     //sil::Image circle_image{500,500};
     //circle(circle_image);
+    //animate_disc();
 
-    animate_disc();
+    rosace();
 
     return 0;
 }
