@@ -2,6 +2,7 @@
 #include <glm/glm.hpp>
 #include <algorithm>
 #include <cmath>
+#include "random.hpp"
 
 void keep_green_only(sil::Image& image)
 {
@@ -62,8 +63,25 @@ void mirror(sil::Image& image)
     }
 }
 
+void noisy(sil::Image& image)
+{
+    for (glm::vec3& color : image.pixels())
+    {
+        if (true_with_probability(0.25f)) 
+        {
+            color = glm::vec3(
+                random_float(0.f, 1.f),
+                random_float(0.f, 1.f),
+                random_float(0.f, 1.f)
+            );
+        }
+    }
+}
+
 int main()
 {
+    set_random_seed(0); 
+
     sil::Image image{"images/logo.png"};
 
     //keep_green_only(image);
@@ -72,9 +90,10 @@ int main()
     //negative(image);
     //sil::Image degraded_image{600, 200};
     //degraded(degraded_image);
+    //mirror(image);
 
-    mirror(image);
-    image.save("output/mirror.png");
+    noisy(image);
+    image.save("output/noisy.png");
 
     return 0;
 }
