@@ -89,6 +89,28 @@ void rotate_90_clockwise(const sil::Image& image, sil::Image& new_image)
     }
 }
 
+void rgb_split(const sil::Image& image, sil::Image& new_image)
+{
+    const int shift = 20; 
+
+    for (int y = 0; y < image.height(); ++y)
+    {
+        for (int x = 0; x < image.width(); ++x)
+        {
+            int xr = std::min(x + shift, image.width() - 1);  
+            int xb = std::max(x - shift, 0);                 
+
+            glm::vec3 orig_color = image.pixel(x, y);
+            new_image.pixel(x, y) = glm::vec3(
+                image.pixel(xr, y).r, 
+                orig_color.g,      
+                image.pixel(xb, y).b  
+            );
+        }
+    }
+}
+
+
 int main()
 {
     set_random_seed(0); 
@@ -103,10 +125,12 @@ int main()
     //degraded(degraded_image);
     //mirror(image);
     //noisy(image);
+    //sil::Image rotated_image{image.height(), image.width()};
+    //rotate_90_clockwise(image, rotated_image);
 
-    sil::Image rotated_image{image.height(), image.width()};
-    rotate_90_clockwise(image, rotated_image);
-    rotated_image.save("output/rotate_90.png");
+    sil::Image rgb_image{image.width(), image.height()};
+    rgb_split(image, rgb_image);
+    rgb_image.save("output/rgb_split.png");
 
     return 0;
 }
