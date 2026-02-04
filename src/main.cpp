@@ -78,6 +78,17 @@ void noisy(sil::Image& image)
     }
 }
 
+void rotate_90_clockwise(const sil::Image& image, sil::Image& new_image)
+{
+    for (int y = 0; y < image.height(); ++y)
+    {
+        for (int x = 0; x < image.width(); ++x)
+        {
+            new_image.pixel(image.height() - 1 - y, x) = image.pixel(x, y);
+        }
+    }
+}
+
 int main()
 {
     set_random_seed(0); 
@@ -91,9 +102,11 @@ int main()
     //sil::Image degraded_image{600, 200};
     //degraded(degraded_image);
     //mirror(image);
+    //noisy(image);
 
-    noisy(image);
-    image.save("output/noisy.png");
+    sil::Image rotated_image{image.height(), image.width()};
+    rotate_90_clockwise(image, rotated_image);
+    rotated_image.save("output/rotate_90.png");
 
     return 0;
 }
