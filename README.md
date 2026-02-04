@@ -76,10 +76,33 @@ Rotates image using pixel indexing into a new image.
 
 Shifts red and blue channels using `std::min` and `std::max`.
 
-
-Rotates image using pixel indexing into a new image.
-
 <p float="left">
   <img src="images/logo.png" width="200" />
   <img src="output\rgb_split.png" width="200" />
+</p>
+
+⭐⭐ brightness
+
+Adjusts brightness using `std::pow` for brighter and darker images.
+
+<p float="left">
+  <img src="images\photo.jpg" width="200" />
+  <img src="output\brightness_brighter.png" width="200" />
+  <img src="output\brightness_darker.png" width="200" />
+</p>
+
+⭐⭐(⭐) disc
+
+Draws a white disc using `glm::length` and `std::min`.
+
+<p float="left">
+  <img src="output\disc.png" width="200" />
+</p>
+
+⭐ circle
+
+Draws a circle using `glm::length` and `std::min`.
+
+<p float="left">
+  <img src="output\circle.png" width="200" />
 </p>
