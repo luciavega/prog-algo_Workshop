@@ -78,47 +78,40 @@ void noisy(sil::Image& image)
     }
 }
 
-void rgb_split(const sil::Image& image, sil::Image& new_image)
+void rgb_split(const sil::Image& img, sil::Image& out)
 {
-    int w = image.width();
-    int h = image.height();
+    int w = img.width(), h = img.height();
     for (int y = 0; y < h; ++y)
     {
         for (int x = 0; x < w; ++x)
         {
-            int right = std::min(x + 5, w - 1);
-            int left  = std::max(x - 5, 0);
-            glm::vec3 color;
-            color.r = image.pixel(right, y).r;
-            color.g = image.pixel(x, y).g;
-            color.b = image.pixel(left, y).b;
-            new_image.pixel(x, y) = color;
+            int r = std::min(x + 5, w - 1);
+            int l = std::max(x - 5, 0);
+            out.pixel(x, y) = glm::vec3(img.pixel(r, y).r, img.pixel(x, y).g, img.pixel(l, y).b);
         }
     }
 }
 
-void brightness(const sil::Image& image, sil::Image& brighter, sil::Image& darker)
+void brightness(const sil::Image& img, sil::Image& brighter, sil::Image& darker)
 {
-    int w = image.width();
-    int h = image.height();
+    int w = img.width(), h = img.height();
     for (int y = 0; y < h; ++y)
     {
         for (int x = 0; x < w; ++x)
         {
-            glm::vec3 color = image.pixel(x, y);
-            brighter.pixel(x, y) = glm::vec3(std::pow(color.r, 0.5f), std::pow(color.g, 0.5f), std::pow(color.b, 0.5f));
-            darker.pixel(x, y)   = glm::vec3(std::pow(color.r, 1.5f), std::pow(color.g, 1.5f), std::pow(color.b, 1.5f));
+            glm::vec3 c = img.pixel(x, y);
+            brighter.pixel(x, y) = glm::vec3(std::pow(c.r, 0.5f), std::pow(c.g, 0.5f), std::pow(c.b, 0.5f));
+            darker.pixel(x, y) = glm::vec3(std::pow(c.r, 1.5f), std::pow(c.g, 1.5f), std::pow(c.b, 1.5f));
         }
     }
 }
 
-void disc(sil::Image& image)
+void disc(sil::Image& image, int offset_x = 0)
 {
-    int w = image.width();
-    int h = image.height();
+    int w = image.width(), h = image.height();
     glm::vec2 center(w / 2.f, h / 2.f);
     float radius = std::min(w, h) * 0.3f;
-
+    center.x += offset_x;
     for (int y = 0; y < h; ++y)
     {
         for (int x = 0; x < w; ++x)
@@ -135,12 +128,10 @@ void disc(sil::Image& image)
 
 void circle(sil::Image& image)
 {
-    int w = image.width();
-    int h = image.height();
+    int w = image.width(), h = image.height();
     glm::vec2 center(w / 2.f, h / 2.f);
     float radius = std::min(w, h) * 0.3f;
     float thickness = radius * 0.1f;
-
     for (int y = 0; y < h; ++y)
     {
         for (int x = 0; x < w; ++x)
@@ -148,10 +139,28 @@ void circle(sil::Image& image)
             glm::vec2 pos(x, y);
             float dist = glm::length(pos - center);
             if (dist >= radius - thickness && dist <= radius + thickness)
-                image.pixel(x, y) = glm::vec3(1.f); 
+                image.pixel(x, y) = glm::vec3(1.f);
             else
                 image.pixel(x, y) = glm::vec3(0.f);
         }
+    }
+}
+
+void animate_disc()
+{
+    int w = 500;
+    int h = 500;
+    int frames = 10;        
+    int max_offset = 100;     
+
+    for (int i = 0; i < frames; ++i)
+    {
+        sil::Image frame{w, h};
+        int offset = (i * max_offset) / (frames - 1); 
+        disc(frame, offset);
+        char filename[64];
+        sprintf(filename, "output/disc_frame_%02d.png", i);
+        frame.save(filename);
     }
 }
 
@@ -169,16 +178,16 @@ int main()
     //mirror(image);
     //noisy(image);
     //sil::Image rgb_image{image.width(), image.height()};
-    //rgb_split(image, rgb_image);
+    //rgb_split(image,rgb_image);
     //sil::Image brighter_image{image.width(), image.height()};
     //sil::Image darker_image{image.width(), image.height()};
-    //brightness(image, brighter_image, darker_image);
-    //sil::Image disc_image{500, 500};
+    //brightness(image,brighter_image,darker_image);
+    //sil::Image disc_image{500,500};
     //disc(disc_image);
+    //sil::Image circle_image{500,500};
+    //circle(circle_image);
 
-    sil::Image circle_image{500, 500};
-    circle(circle_image);
-    circle_image.save("output/circle.png");
+    animate_disc();
 
     return 0;
 }
