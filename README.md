@@ -122,3 +122,21 @@ Draws a rosace pattern using `std::sqrt`, `std::cos`, and `std::sin`.
 <p float="left">
   <img src="output\rosace.png" width="200" />
 </p>
+
+⭐⭐ mosaic
+
+Tiles the image `grid_size`×`grid_size` to create a mosaic.
+
+<p float="left">
+  <img src="images/logo.png" width="200" />
+  <img src="output\mosaic.png" width="200" />
+</p>
+
+⭐⭐⭐⭐ mosaic mirror
+
+Tiles and mirrors the image `grid_size`×`grid_size`.
+
+<p float="left">
+  <img src="images/logo.png" width="200" />
+  <img src="output\mosaic_mirror.png" width="200" />
+</p>
