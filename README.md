@@ -106,3 +106,19 @@ Draws a circle using `glm::length` and `std::min`.
 <p float="left">
   <img src="output\circle.png" width="200" />
 </p>
+
+⭐⭐ animation
+
+Generates frames of a moving disc using a loop and `sprintf`.
+
+<p float="left">
+  <img src="output\animation.gif" width="200" />
+</p>
+
+⭐⭐⭐ rosace
+
+Draws a rosace pattern using `std::sqrt`, `std::cos`, and `std::sin`.
+
+<p float="left">
+  <img src="output\rosace.png" width="200" />
+</p>
