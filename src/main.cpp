@@ -2,6 +2,8 @@
 #include <glm/glm.hpp>
 #include <algorithm>
 #include <cmath>
+#include <vector>
+#include <string>
 #include "random.hpp"
 
 void keep_green_only(sil::Image& image)
@@ -210,6 +212,55 @@ void rosace()
     image.save("output/rosace.png");
 }
 
+sil::Image create_mosaic(const sil::Image& img, int grid_size)
+{
+    int w = img.width();
+    int h = img.height();
+    sil::Image mosaic{w * grid_size, h * grid_size};
+
+    for (int i = 0; i < grid_size * grid_size; ++i)
+    {
+        int row = i / grid_size;
+        int col = i % grid_size;
+
+        for (int y = 0; y < h; ++y)
+        {
+            for (int x = 0; x < w; ++x)
+            {
+                mosaic.pixel(col * w + x, row * h + y) = img.pixel(x, y);
+            }
+        }
+    }
+
+    return mosaic;
+}
+
+sil::Image mosaic_mirror(const sil::Image& img, int grid_size)
+{
+    int w = img.width();
+    int h = img.height();
+    sil::Image mosaic{w * grid_size, h * grid_size};
+
+    for (int row = 0; row < grid_size; ++row)
+    {
+        for (int col = 0; col < grid_size; ++col)
+        {
+            for (int y = 0; y < h; ++y)
+            {
+                for (int x = 0; x < w; ++x)
+                {
+                    int srcX = (col % 2 == 0) ? x : w - 1 - x;
+                    int srcY = (row % 2 == 0) ? y : h - 1 - y;
+
+                    mosaic.pixel(col * w + x, row * h + y) = img.pixel(srcX, srcY);
+                }
+            }
+        }
+    }
+
+    return mosaic;
+}
+
 
 int main()
 {
@@ -234,8 +285,13 @@ int main()
     //sil::Image circle_image{500,500};
     //circle(circle_image);
     //animate_disc();
+    //rosace();
+    //sil::Image mosaic_normal = create_mosaic(image, 5);
+    //mosaic_normal.save("output/mosaic.png");
 
-    rosace();
+    sil::Image logo{"images/logo.png"};
+    sil::Image mosaic_damier = mosaic_mirror(logo, 5);
+    mosaic_damier.save("output/mosaic_mirror.png");
 
     return 0;
 }
