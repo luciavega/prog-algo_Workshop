@@ -67,7 +67,7 @@ void noisy(sil::Image& image)
 {
     for (glm::vec3& color : image.pixels())
     {
-        if (true_with_probability(0.25f)) 
+        if (true_with_probability(0.25f))
         {
             color = glm::vec3(
                 random_float(0.f, 1.f),
@@ -86,37 +86,71 @@ void rgb_split(const sil::Image& image, sil::Image& new_image)
     {
         for (int x = 0; x < w; ++x)
         {
-            int xr = std::min(w - 1, x + 5); 
-            int xb = std::max(0, x - 5);   
-            glm::vec3 c = image.pixel(x, y);
-            new_image.pixel(x, y) = glm::vec3(
-                image.pixel(xr, y).r,
-                c.g,
-                image.pixel(xb, y).b
-            );
+            int right = std::min(x + 5, w - 1);
+            int left  = std::max(x - 5, 0);
+            glm::vec3 color;
+            color.r = image.pixel(right, y).r;
+            color.g = image.pixel(x, y).g;
+            color.b = image.pixel(left, y).b;
+            new_image.pixel(x, y) = color;
         }
     }
 }
 
 void brightness(const sil::Image& image, sil::Image& brighter, sil::Image& darker)
 {
-    for (int y = 0; y < image.height(); ++y)
+    int w = image.width();
+    int h = image.height();
+    for (int y = 0; y < h; ++y)
     {
-        for (int x = 0; x < image.width(); ++x)
+        for (int x = 0; x < w; ++x)
         {
             glm::vec3 color = image.pixel(x, y);
-            
-            brighter.pixel(x, y) = glm::vec3(
-                std::pow(color.r, 0.6f),
-                std::pow(color.g, 0.6f),
-                std::pow(color.b, 0.6f)
-            );
+            brighter.pixel(x, y) = glm::vec3(std::pow(color.r, 0.5f), std::pow(color.g, 0.5f), std::pow(color.b, 0.5f));
+            darker.pixel(x, y)   = glm::vec3(std::pow(color.r, 1.5f), std::pow(color.g, 1.5f), std::pow(color.b, 1.5f));
+        }
+    }
+}
 
-            darker.pixel(x, y) = glm::vec3(
-                std::pow(color.r, 1.6f),
-                std::pow(color.g, 1.6f),
-                std::pow(color.b, 1.6f)
-            );
+void disc(sil::Image& image)
+{
+    int w = image.width();
+    int h = image.height();
+    glm::vec2 center(w / 2.f, h / 2.f);
+    float radius = std::min(w, h) * 0.3f;
+
+    for (int y = 0; y < h; ++y)
+    {
+        for (int x = 0; x < w; ++x)
+        {
+            glm::vec2 pos(x, y);
+            float dist = glm::length(pos - center);
+            if (dist <= radius)
+                image.pixel(x, y) = glm::vec3(1.f);
+            else
+                image.pixel(x, y) = glm::vec3(0.f);
+        }
+    }
+}
+
+void circle(sil::Image& image)
+{
+    int w = image.width();
+    int h = image.height();
+    glm::vec2 center(w / 2.f, h / 2.f);
+    float radius = std::min(w, h) * 0.3f;
+    float thickness = radius * 0.1f;
+
+    for (int y = 0; y < h; ++y)
+    {
+        for (int x = 0; x < w; ++x)
+        {
+            glm::vec2 pos(x, y);
+            float dist = glm::length(pos - center);
+            if (dist >= radius - thickness && dist <= radius + thickness)
+                image.pixel(x, y) = glm::vec3(1.f); 
+            else
+                image.pixel(x, y) = glm::vec3(0.f);
         }
     }
 }
@@ -125,8 +159,7 @@ int main()
 {
     set_random_seed(0);
 
-    sil::Image image{"images/photo.jpg"};
-
+    //sil::Image image{"images/photo.jpg"};
     //keep_green_only(image);
     //swap_red_blue(image);
     //black_and_white(image);
@@ -137,13 +170,15 @@ int main()
     //noisy(image);
     //sil::Image rgb_image{image.width(), image.height()};
     //rgb_split(image, rgb_image);
+    //sil::Image brighter_image{image.width(), image.height()};
+    //sil::Image darker_image{image.width(), image.height()};
+    //brightness(image, brighter_image, darker_image);
+    //sil::Image disc_image{500, 500};
+    //disc(disc_image);
 
-    sil::Image brighter_image{image.width(), image.height()};
-    sil::Image darker_image{image.width(), image.height()};
-    brightness(image, brighter_image, darker_image);
-
-    brighter_image.save("output/brightness_brighter.png");
-    darker_image.save("output/brightness_darker.png");
+    sil::Image circle_image{500, 500};
+    circle(circle_image);
+    circle_image.save("output/circle.png");
 
     return 0;
 }
