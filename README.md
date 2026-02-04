@@ -62,3 +62,24 @@ Adds random noise using `true_with_probability` and `random_float`.
   <img src="images/logo.png" width="200" />
   <img src="output\noisy.png" width="200" />
 </p>
+
+⭐⭐ 90° rotation
+
+Rotates image using pixel indexing into a new image.
+
+<p float="left">
+  <img src="images/logo.png" width="200" />
+  <img src="output\rotate_90.png" width="200" />
+</p>
+
+⭐⭐ RGB split
+
+Shifts red and blue channels using `std::min` and `std::max`.
+
+
+Rotates image using pixel indexing into a new image.
+
+<p float="left">
+  <img src="images/logo.png" width="200" />
+  <img src="output\rgb_split.png" width="200" />
+</p>
