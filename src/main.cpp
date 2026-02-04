@@ -78,44 +78,54 @@ void noisy(sil::Image& image)
     }
 }
 
-void rotate_90_clockwise(const sil::Image& image, sil::Image& new_image)
-{
-    for (int y = 0; y < image.height(); ++y)
-    {
-        for (int x = 0; x < image.width(); ++x)
-        {
-            new_image.pixel(image.height() - 1 - y, x) = image.pixel(x, y);
-        }
-    }
-}
-
 void rgb_split(const sil::Image& image, sil::Image& new_image)
 {
-    const int shift = 20; 
-
-    for (int y = 0; y < image.height(); ++y)
+    int w = image.width();
+    int h = image.height();
+    for (int y = 0; y < h; ++y)
     {
-        for (int x = 0; x < image.width(); ++x)
+        for (int x = 0; x < w; ++x)
         {
-            int xr = std::min(x + shift, image.width() - 1);  
-            int xb = std::max(x - shift, 0);                 
-
-            glm::vec3 orig_color = image.pixel(x, y);
+            int xr = std::min(w - 1, x + 5); 
+            int xb = std::max(0, x - 5);   
+            glm::vec3 c = image.pixel(x, y);
             new_image.pixel(x, y) = glm::vec3(
-                image.pixel(xr, y).r, 
-                orig_color.g,      
-                image.pixel(xb, y).b  
+                image.pixel(xr, y).r,
+                c.g,
+                image.pixel(xb, y).b
             );
         }
     }
 }
 
+void brightness(const sil::Image& image, sil::Image& brighter, sil::Image& darker)
+{
+    for (int y = 0; y < image.height(); ++y)
+    {
+        for (int x = 0; x < image.width(); ++x)
+        {
+            glm::vec3 color = image.pixel(x, y);
+            
+            brighter.pixel(x, y) = glm::vec3(
+                std::pow(color.r, 0.6f),
+                std::pow(color.g, 0.6f),
+                std::pow(color.b, 0.6f)
+            );
+
+            darker.pixel(x, y) = glm::vec3(
+                std::pow(color.r, 1.6f),
+                std::pow(color.g, 1.6f),
+                std::pow(color.b, 1.6f)
+            );
+        }
+    }
+}
 
 int main()
 {
-    set_random_seed(0); 
+    set_random_seed(0);
 
-    sil::Image image{"images/logo.png"};
+    sil::Image image{"images/photo.jpg"};
 
     //keep_green_only(image);
     //swap_red_blue(image);
@@ -125,12 +135,15 @@ int main()
     //degraded(degraded_image);
     //mirror(image);
     //noisy(image);
-    //sil::Image rotated_image{image.height(), image.width()};
-    //rotate_90_clockwise(image, rotated_image);
+    //sil::Image rgb_image{image.width(), image.height()};
+    //rgb_split(image, rgb_image);
 
-    sil::Image rgb_image{image.width(), image.height()};
-    rgb_split(image, rgb_image);
-    rgb_image.save("output/rgb_split.png");
+    sil::Image brighter_image{image.width(), image.height()};
+    sil::Image darker_image{image.width(), image.height()};
+    brightness(image, brighter_image, darker_image);
+
+    brighter_image.save("output/brightness_brighter.png");
+    darker_image.save("output/brightness_darker.png");
 
     return 0;
 }
