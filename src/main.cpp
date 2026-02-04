@@ -19,14 +19,24 @@ void swap_red_blue(sil::Image& image)
     }
 }
 
+void black_and_white(sil::Image& image)
+{
+    for (glm::vec3& color : image.pixels())
+    {
+        float gray = (color.r + color.g + color.b) / 3.f;
+        color.r = color.g = color.b = gray;
+    }
+}
+
 int main()
 {
     sil::Image image{"images/logo.png"};
 
-    keep_green_only(image); 
+    keep_green_only(image);  
+    swap_red_blue(image);   
 
-    swap_red_blue(image);
-    image.save("output/swap_red_blue.png"); 
+    black_and_white(image);  
+    image.save("output/black_white.png");
 
     return 0;
 }
