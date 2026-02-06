@@ -140,3 +140,50 @@ Tiles and mirrors the image `grid_size`×`grid_size`.
   <img src="images/logo.png" width="200" />
   <img src="output\mosaic_mirror.png" width="200" />
 </p>
+
+⭐⭐⭐ sorting of pixels 
+
+Sorts random horizontal segments using `std::sort` and `true_with_probability`.
+
+<p float="left">
+  <img src="images/logo.png" width="200" />
+  <img src="output\logo_sorted.png" width="200" />
+</p>
+
+⭐⭐⭐(⭐) degraded in the color space Lab 
+
+Creates a horizontal gradient blending red → yellow → green in **OKLab** space using:
+- `srgb_to_linear` / `linear_to_srgb` for color conversion
+- `linear_rgb_to_oklab` / `oklab_to_linear_rgb` for OKLab
+- `glm::mix` for interpolation
+
+<p float="left">
+  <img src="images/logo.png" width="200" />
+  <img src="output\degraded_lab.png" width="200" />
+</p>
+
+⭐⭐⭐⭐ vortex 
+
+Applies a vortex effect using `std::sqrt`, `std::cos`, and `std::sin`.
+
+<p float="left">
+  <img src="images/logo.png" width="200" />
+  <img src="output\logo_vortex.png" width="200" />
+</p>
+
+⭐⭐⭐⭐ convolution
+
+Applies a 2D convolution to the image using a kernel, e.g., for blur, sharpen, emboss, or outline.  
+
+Uses `std::clamp` to handle edges and `glm::clamp` to keep colors in [0,1].
+
+<p float="left">
+  <img src="images/logo.png" width="200" />
+  <img src="output\logo_blur.png" width="200" />
+</p>
+
+<p float="left">
+  <img src="output\logo_emboss.png" width="200" />
+  <img src="output\logo_outline.png" width="200" />
+  <img src="output\logo_sharpen.png" width="200" />
+</p>
