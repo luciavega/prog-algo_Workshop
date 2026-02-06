@@ -303,5 +303,9 @@ int main()
     sort_pixels(logo);
     logo.save("output/logo_sorted.png");
 
+    sil::Image logo{"images/logo.png"};
+    sil::Image mosaic_damier = mosaic_mirror(logo, 5);
+    mosaic_damier.save("output/mosaic_mirror.png");
+
     return 0;
 }
