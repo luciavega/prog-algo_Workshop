@@ -298,7 +298,7 @@ void vortex(sil::Image &image)
 {
     int w = image.width();
     int h = image.height();
-    sil::Image copy = image; // copia original
+    sil::Image copy = image;
 
     float cx = w / 2.f;
     float cy = h / 2.f;
@@ -311,15 +311,13 @@ void vortex(sil::Image &image)
             float dy = y - cy;
 
             float distance = std::sqrt(dx*dx + dy*dy);
-            float angle = distance * 0.1f; // intensidad del vortex
-
-            // Rotación sin librerías externas
+            float angle = distance * 0.1f; 
+        
             float cosA = std::cos(angle);
             float sinA = std::sin(angle);
             float srcX = dx * cosA - dy * sinA + cx;
             float srcY = dx * sinA + dy * cosA + cy;
 
-            // Limitar dentro de la imagen
             int ix = std::min(std::max(int(srcX), 0), w-1);
             int iy = std::min(std::max(int(srcY), 0), h-1);
 
@@ -328,12 +326,75 @@ void vortex(sil::Image &image)
     }
 }
 
+void apply_convolution(sil::Image &image, const std::vector<std::vector<float>> &kernel)
+{
+    int w = image.width();
+    int h = image.height();
+    int kSize = kernel.size();
+    int kHalf = kSize / 2;
+
+    sil::Image copy = image;
+
+    for (int y = 0; y < h; ++y)
+    {
+        for (int x = 0; x < w; ++x)
+        {
+            glm::vec3 accum(0.f);
+
+            for (int ky = 0; ky < kSize; ++ky)
+            {
+                for (int kx = 0; kx < kSize; ++kx)
+                {
+                    int px = std::clamp(x + kx - kHalf, 0, w - 1);
+                    int py = std::clamp(y + ky - kHalf, 0, h - 1);
+                    accum += copy.pixel(px, py) * kernel[ky][kx];
+                }
+            }
+
+            image.pixel(x, y) = glm::clamp(accum, 0.f, 1.f);
+        }
+    }
+}
+
 int main()
 {
     sil::Image logo{"images/logo.png"};
 
-    vortex(logo);
-    logo.save("output/logo_vortex.png");
+    std::vector<std::vector<float>> blur(11, std::vector<float>(11, 1.f / 121.f));
+
+    std::vector<std::vector<float>> sharpen = {
+        {0, -1, 0},
+        {-1, 5, -1},
+        {0, -1, 0}
+    };
+
+    std::vector<std::vector<float>> emboss = {
+        {-2, -1, 0},
+        {-1, 1, 1},
+        {0, 1, 2}
+    };
+
+    std::vector<std::vector<float>> outline = {
+        {-1, -1, -1},
+        {-1, 8, -1},
+        {-1, -1, -1}
+    };
+
+    sil::Image logo_blur = logo;
+    apply_convolution(logo_blur, blur);
+    logo_blur.save("output/logo_blur.png");
+
+    sil::Image logo_sharpen = logo;
+    apply_convolution(logo_sharpen, sharpen);
+    logo_sharpen.save("output/logo_sharpen.png");
+
+    sil::Image logo_emboss = logo;
+    apply_convolution(logo_emboss, emboss);
+    logo_emboss.save("output/logo_emboss.png");
+
+    sil::Image logo_outline = logo;
+    apply_convolution(logo_outline, outline);
+    logo_outline.save("output/logo_outline.png");
 
     return 0;
 }
