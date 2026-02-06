@@ -294,18 +294,109 @@ void sort_pixels(sil::Image& image)
     image.pixels() = pixels;
 }
 
+#include <sil/sil.hpp>
+#include <glm/glm.hpp>
+#include <algorithm>
+#include <cmath>
+#include <vector>
+
+// --- sRGB ↔ Linear RGB ---
+glm::vec3 srgb_to_linear(const glm::vec3& c)
+{
+    glm::vec3 l;
+    for (int i = 0; i < 3; ++i)
+    {
+        if (c[i] <= 0.04045f)
+            l[i] = c[i] / 12.92f;
+        else
+            l[i] = std::pow((c[i] + 0.055f) / 1.055f, 2.4f);
+    }
+    return l;
+}
+
+glm::vec3 linear_to_srgb(const glm::vec3& c)
+{
+    glm::vec3 s;
+    for (int i = 0; i < 3; ++i)
+    {
+        if (c[i] <= 0.0031308f)
+            s[i] = c[i] * 12.92f;
+        else
+            s[i] = 1.055f * std::pow(c[i], 1.f/2.4f) - 0.055f;
+    }
+    return s;
+}
+
+glm::vec3 linear_rgb_to_oklab(const glm::vec3& c)
+{
+    float l = 0.4122214708f * c.r + 0.5363325363f * c.g + 0.0514459929f * c.b;
+    float m = 0.2119034982f * c.r + 0.6806995451f * c.g + 0.1073969566f * c.b;
+    float s = 0.0883024619f * c.r + 0.2817188376f * c.g + 0.6299787005f * c.b;
+
+    l = std::cbrt(l);
+    m = std::cbrt(m);
+    s = std::cbrt(s);
+
+    return glm::vec3(
+        0.2104542553f * l + 0.7936177850f * m - 0.0040720468f * s, // L
+        1.9779984951f * l - 2.4285922050f * m + 0.4505937099f * s, // a
+        0.0259040371f * l + 0.7827717662f * m - 0.8086757660f * s  // b
+    );
+}
+
+glm::vec3 oklab_to_linear_rgb(const glm::vec3& lab)
+{
+    float l_ = lab.x + 0.3963377774f * lab.y + 0.2158037573f * lab.z;
+    float m_ = lab.x - 0.1055613458f * lab.y - 0.0638541728f * lab.z;
+    float s_ = lab.x - 0.0894841775f * lab.y - 1.2914855480f * lab.z;
+
+    l_ = l_ * l_ * l_;
+    m_ = m_ * m_ * m_;
+    s_ = s_ * s_ * s_;
+
+    return glm::vec3(
+        +4.0767416621f * l_ - 3.3077115913f * m_ + 0.2309699292f * s_,
+        -1.2684380046f * l_ + 2.6097574011f * m_ - 0.3413193965f * s_,
+        -0.0041960863f * l_ - 0.7034186147f * m_ + 1.7076147010f * s_
+    );
+}
+
+glm::vec3 mix_oklab(const glm::vec3& c1, const glm::vec3& c2, float t)
+{
+    glm::vec3 lab1 = linear_rgb_to_oklab(srgb_to_linear(c1));
+    glm::vec3 lab2 = linear_rgb_to_oklab(srgb_to_linear(c2));
+    glm::vec3 lab = glm::mix(lab1, lab2, t);
+    return linear_to_srgb(oklab_to_linear_rgb(lab));
+}
+
+sil::Image degraded_lab(int width, int height)
+{
+    sil::Image img(width, height);
+
+    glm::vec3 red   = glm::vec3(1.f, 0.f, 0.f);
+    glm::vec3 yellow= glm::vec3(1.f, 1.f, 0.f);
+    glm::vec3 green = glm::vec3(0.f, 1.f, 0.f);
+
+    for (int y = 0; y < height; ++y)
+    {
+        for (int x = 0; x < width; ++x)
+        {
+            float t = x / float(width - 1);
+            glm::vec3 c;
+            if (t < 0.5f)
+                c = mix_oklab(red, yellow, t*2.f);
+            else
+                c = mix_oklab(yellow, green, (t-0.5f)*2.f);
+            img.pixel(x, y) = c;
+        }
+    }
+
+    return img;
+}
+
 int main()
 {
-    set_random_seed(0);
-
-    sil::Image logo{"images/logo.png"};
-
-    sort_pixels(logo);
-    logo.save("output/logo_sorted.png");
-
-    sil::Image logo{"images/logo.png"};
-    sil::Image mosaic_damier = mosaic_mirror(logo, 5);
-    mosaic_damier.save("output/mosaic_mirror.png");
-
+    sil::Image img = degraded_lab(500, 500);
+    img.save("output/degraded_lab.png");
     return 0;
 }
